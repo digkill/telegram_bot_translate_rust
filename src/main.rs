@@ -61,7 +61,7 @@ async fn main() -> ResponseResult<()> {
         .branch(
             Update::filter_message()
                 .branch(
-                    dptree::endpoint(repeat_message),
+                    dptree::endpoint(translate_message),
                 )
         );
 
@@ -93,7 +93,7 @@ async fn left_chat_member(bot: Bot, chat_member: ChatMemberUpdated) -> ResponseR
     Ok(())
 }
 
-async fn repeat_message(bot: Bot, msg: Message) -> ResponseResult<()> {
+async fn translate_message(bot: Bot, msg: Message) -> ResponseResult<()> {
     if let Some(text) = msg.text() {
         let mut languages: [&str; 3] = ["th", "ru", "en"];
 

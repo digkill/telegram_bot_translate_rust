@@ -95,9 +95,8 @@ async fn left_chat_member(bot: Bot, chat_member: ChatMemberUpdated) -> ResponseR
 
 async fn translate_message(bot: Bot, msg: Message) -> ResponseResult<()> {
     if let Some(text) = msg.text() {
-        let mut languages: [&str; 3] = ["th", "ru", "en"];
 
-        match translate(text, &mut languages).await {
+        match translate(text).await {
             Ok(translated_word) => {
                 bot.send_message(msg.chat.id, translated_word).await?;
             }
@@ -112,7 +111,7 @@ async fn translate_message(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-async fn translate(text: &str, target_languages: &mut [&str]) -> ResponseResult<String> {
+async fn translate(text: &str) -> ResponseResult<String> {
     let client = reqwest::Client::new();
 
     let api_translate_url = env::var("API_TRANSLATE_URL").expect("API_TRANSLATE_URL not found");

@@ -36,9 +36,6 @@ async fn main() -> ResponseResult<()> {
     env_logger::init();
     let token_bot = env::var("TELEGRAM_BOT_KEY").expect("TELEGRAM_BOT_KEY not found");
 
-
-    // We specify default parse mode to be `Html`, so that later we can use
-    // `html::user_mention`
     let bot = teloxide::Bot::new(&token_bot).parse_mode(ParseMode::Html);
 
     // Create a handler for our bot, that will process updates from Telegram
@@ -79,10 +76,6 @@ async fn new_chat_member(bot: Bot, chat_member: ChatMemberUpdated) -> ResponseRe
     let user = chat_member.old_chat_member.user.clone();
 
     let telegram_group_name = chat_member.chat.title().unwrap_or("");
-
-    // We get a "@username" mention via `mention()` method if the user has a
-    // username, otherwise we create a textual mention with "Full Name" as the
-    // text linking to the user
     let username = user.id;
 
     bot.send_message(chat_member.chat.id, format!("Welcome to {telegram_group_name} {username}!"))
@@ -93,8 +86,6 @@ async fn new_chat_member(bot: Bot, chat_member: ChatMemberUpdated) -> ResponseRe
 
 async fn left_chat_member(bot: Bot, chat_member: ChatMemberUpdated) -> ResponseResult<()> {
     let user = chat_member.old_chat_member.user;
-
-    ////        user.mention().unwrap_or_else(|| html::user_mention(user.id, user.full_name().as_str()));
     let username = user.id;
 
     bot.send_message(chat_member.chat.id, format!("Goodbye {username}!")).await?;
@@ -129,30 +120,21 @@ async fn translate(text: &str, target_languages: &mut [&str]) -> ResponseResult<
     let api_detect_url = env::var("API_DETECT_URL").expect("API_DETECT_URL not found");
     eprintln!("{text:#?}");
 
-    let detectRequest = DetectRequest {
+    let detect_request = DetectRequest {
         q: String::from(text),
         api_key: String::from(api_translate_key.clone()),
     };
 
-
     let res = client.post(api_detect_url)
         .header("Content-Type", "application/x-www-form-urlencoded")
-        .form(&detectRequest)
-        // .form(&[("q", text), ("api_key", &api_translate_key_copy)])
+        .form(&detect_request)
         .send()
         .await?;
     let resp_json = res.json::<Vec<DetectResponse>>().await?;
 
-    //  let resp_text = res.json::<DetectResponse>().await?;
-    //  let json:DetectResponseList = serde_json::from_str(&resp_text).unwrap();
     let lang = &resp_json[0].language;
 
     eprintln!("{lang:#?}");
-
-    /*
-    println!("Status: {}", res.status());
-    let body = res.text().await?;
-    println!("Body: {}", body);*/
     let target_lang = if lang == "ru" { "th" } else { "ru" };
 
     let json_object = json!({
@@ -175,25 +157,7 @@ async fn translate(text: &str, target_languages: &mut [&str]) -> ResponseResult<
         .send()
         .await?;
 
-    // let response = res.text();
-
-    //  eprintln!("{response:#?}");
-    //        eprintln!("{u:#?}"); // Print the update to the console with inspect
-    //  let resp_json = res.json().await?;
-
-    // let resp_json = res.json::<HashMap<String, String>>().await?;
-    //let resp_json = res.text().await?;
-
     let resp_json = res.json::<TranslateResult>().await?;
-
-    //   let json_response = serde_json::from_str(&resp_json);
-
     let translated_word = resp_json.translatedText;
-
-    //  let weather: WeatherResponse = response.json().await?;
-
-    //  eprintln!("{translated_word:#?}");
-    //  println!("{:#?}", resp_json);
-
     Ok(translated_word)
 }

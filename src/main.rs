@@ -152,8 +152,6 @@ async fn translate(text: &str, target_languages: &mut [&str]) -> ResponseResult<
     let res = client.post(api_translate_url)
         .body(json_string)
         .header("Content-Type", "application/json")
-        .header("CONTENT_LENGTH", HeaderValue::from_static("0"))
-
         .send()
         .await?;
 
